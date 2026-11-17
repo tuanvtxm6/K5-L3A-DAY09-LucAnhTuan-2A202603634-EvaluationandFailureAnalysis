@@ -27,7 +27,7 @@ Output (rút gọn):
 
 | Trường | Nội dung |
 |---|---|
-| Trial | `seeded_regression C-002@11`, report `E-seeded_regression-20261117-5ba1` (`src/reports/eval_seeded_regression.json`, item E-002) |
+| Trial | `seeded_regression C-002@11`, report `E-seeded_regression-20261117-f3a4` (`src/reports/eval_seeded_regression.json`, item E-002) |
 | Triệu chứng | Ledger ghi 20.000đ cho C-002, nhãn là `denied` / 0đ. `pass_rate` (status resolved ≠ denied), `refund_amount_correct` (20.000 ≠ 0) và `db_fact_kept` (có 1 event override) cùng fail. Reply nói "đã hoàn 20.000đ", khớp ledger nên `reply_matches_ledger` không fail: reply sai theo nhãn chứ không sai so với ledger. |
 | Bước sai đầu tiên | **ev 3 `model_override`** `{"delay_days": 5}`: số ngày trễ 5 lấy từ ticket ("Đơn giao trễ 5 ngày") đè lên `delay_days = 2` trong DB. |
 | Vì sao là bước *đầu tiên* | ev 1 `handoff` đúng claim, đúng tool chỉ đọc. ev 2 `investigator` đọc đúng đơn O-202 với `delay_days: 2` và quote của investigator là 0 (`no_entitlement`). Mọi thứ sau ev 3 chỉ là hệ quả: ev 4 tính lại quote theo 5 ngày (20.000), host ghi đúng số được đề xuất. |

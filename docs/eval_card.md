@@ -2,8 +2,8 @@
 
 Card này đi kèm mỗi báo cáo và được dùng lại ở Day 10.
 
-- **Run ID / eval set SHA:** baseline `E-swarm-20261117-5ba1` · eval set `5ba1b4d3509e`
-- **Phiên bản:** code nhánh `starter/d09` · eval set v1 (sha `5ba1b4d3509e`) · metric_spec 1.0 · grader `src/lab9/graders.py` cùng commit · seeds 11/22/33/44/55 · MockLLM · Python 3.13
+- **Run ID / eval set SHA:** baseline `E-swarm-20261117-f3a4` · eval set `f3a48f3462b0`
+- **Phiên bản:** code nhánh `starter/d09` · eval set v1 (sha `f3a48f3462b0`) · metric_spec 1.0 · grader `src/lab9/graders.py` cùng commit · seeds 11/22/33/44/55 · MockLLM · Python 3.13
 - **Eval set:** v1, 14 item × 5 seed = 70 trial, nguồn `lab8_public` (ma trận T01–T14); nhãn trong `labels_v1.json`, tách khỏi item; mỗi item có `failure_modes` (FM-01…FM-09) và provenance (`checked_by: bug_switch_replay`, E-002/E-013/E-014 có `from_trace`).
 - **Metric & ngưỡng** (`config/metric_spec.yaml`):
 
@@ -34,7 +34,7 @@ Card này đi kèm mỗi báo cáo và được dùng lại ở Day 10.
 | cost_per_success | 49.567 | 48.716 | 81.202 (warn) |
 | **Gate** | — | **exit 0 — merge** | **exit 1 — blocked: refund_amount_correct, pass_rate, reply_matches_ledger** |
 
-  Report: `reports/baseline_v1.json`, `reports/eval_fixed.json` (`E-fixed-20261117-5ba1`), `reports/eval_seeded_regression.json` (`E-seeded_regression-20261117-5ba1`).
+  Report: `reports/baseline_v1.json`, `reports/eval_fixed.json` (`E-fixed-20261117-f3a4`), `reports/eval_seeded_regression.json` (`E-seeded_regression-20261117-f3a4`).
 - **Grader (M3):** `python -m lab9.mutation --detect` → phát hiện 100% trial lỗi của `seeded_regression` (mục tiêu ≥80%), báo nhầm 0% trên `fixed` (mục tiêu ≤10%). Metric FM-08 được kiểm riêng trên variant chỉ bật `misreport`: `pass_rate` = 1.0 (grader Lab 8 không đọc reply) nhưng `reply_matches_ledger` = 0.857, Δ −0.143 → BLOCK.
 - **Judge:** tone_ok κ=0.757, P=0.857, R=0.800 → dùng (không blocking). helpful κ=0.375, P=1.000, R=0.300 → loại: 18/21 ca bỏ sót là "sai tiền", việc judge chỉ đọc reply không làm được; thay bằng grader code `reply_matches_ledger`. Chi tiết: `docs/judge_audit.md`.
 - **Trace case:** `docs/trace_case.md`: `seeded_regression` C-002@11, bước sai đầu tiên là ev 3 `model_override {"delay_days": 5}` (FM-03); regression test `tests/test_lab9_trace_case.py`.
@@ -47,3 +47,5 @@ Card này đi kèm mỗi báo cáo và được dùng lại ở Day 10.
   - `reply_matches_ledger` chỉ đọc event `reply`. Swarm tham chiếu không ghi reply nên baseline luôn 1.0 cho metric này; regex chỉ nhận số có đơn vị "đ"/"VND".
   - Không đo trên người dùng thật.
 - **Khi nào tăng eval-set version:** khi thêm/bỏ item (ví dụ thêm item từ trace case mới hoặc pack adversarial v2), đổi nhãn (ví dụ sửa H-081 trong tập judge), hoặc đổi định nghĩa `failure_modes`. Khi tăng version thì chạy lại baseline trên `main`; ngưỡng bắt đầu lại từ đó và tiếp tục theo ratchet.
+
+> Ghi chú tái lập: `eval_set_sha` tính trên byte của file. Trên Windows, `evalset --build` ghi CRLF nên ra SHA khác bản LF mà git lưu và CI đọc. Sau khi build trên Windows, chạy `git checkout -- src/data/eval/` (repo có `.gitattributes eol=lf`) rồi mới sinh baseline.
