@@ -3,3 +3,5 @@
 *.sqlite binary
 *.png binary
 *.pdf binary
+# Instructor judge CSVs ship with CRLF: keep them byte-identical.
+src/data/eval/*.csv -text
