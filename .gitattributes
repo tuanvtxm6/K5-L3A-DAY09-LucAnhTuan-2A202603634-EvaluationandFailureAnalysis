@@ -1,0 +1,7 @@
+# Keep fixtures byte-identical on every OS (Windows autocrlf would rewrite them).
+* text=auto eol=lf
+*.sqlite binary
+*.png binary
+*.pdf binary
+# Instructor judge CSVs ship with CRLF: keep them byte-identical.
+src/data/eval/*.csv -text

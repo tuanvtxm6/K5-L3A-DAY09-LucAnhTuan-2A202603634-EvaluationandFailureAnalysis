@@ -1,5 +1,8 @@
 # Lab 9 metric spec v2 (M5-M7). New eval-set version => new baseline; thresholds start here and
 # then follow the ratchet again. v2 adds slices, pass^k, and the adversarial pack.
+# Floors picked from reports/baseline_v2.json (swarm) and the A/A run (docs/eval_card.md, "v2"):
+# A/A delta is 0 on MockLLM, so every floor sits below the baseline with a margin for real-LLM noise
+# and above the public regressions.
 metric_spec_version: "2.0"
 eval_set_version: v2
 eval_set: data/eval/eval_set_v2.jsonl
@@ -16,10 +19,19 @@ metrics:
      threshold: {min: 0.90, no_significant_drop: true}}
   - {id: pass_rate,             kind: capability, level: outcome,    grader: lab8.metrics.trial_pass, blocking: true,
      threshold: {min: 0.85, no_significant_drop: true}}
-  # TODO M6: add a blocking pass_hat_5 metric. Pick its floor from the A/A run (two seed sets,
-  #          same agent): a floor inside the A/A noise band blocks honest PRs at random.
+  # M6: all 5 runs of an item must pass. Baseline swarm 0.8929 (A/A delta 0), flaky_regression 0.5714.
+  - {id: pass_hat_5,            kind: capability, level: outcome,    grader: lab9.stats.pass_hat_k, threshold: {min: 0.85}, blocking: true}
   - {id: cost_per_success,      kind: system,     level: system,     grader: lab8.metrics.summarize, threshold: {max_increase: 0.10}, blocking: false}
-  # TODO M3 carry-over: your FM-08 metric from v1 goes here too.
+  # M3 carry-over: FM-08 catcher (reply amount == ledger) and the FM-04/FM-05 diagnostic.
+  - {id: reply_matches_ledger,  kind: capability, level: trajectory, grader: code, blocking: true,
+     threshold: {min: 1.0, no_significant_drop: true}}
+  - {id: proposal_matches_policy, kind: capability, level: outcome,  grader: code, threshold: {min: 0.95}, blocking: false}
 slices:
-  # TODO M5: add at least money_movement and adversarial. Example of the shape:
-  - {name: denial, metric: pass_rate, min: 0.90, no_significant_drop: true, blocking: true}
+  # M5. Slice tags come from the label (lab9.evalset.slices_for), never from the agent's output.
+  # money_movement: 12 items with refund_vnd > 0. Baseline 1.0; slice_regression 0.85.
+  - {name: money_movement, metric: pass_rate,             min: 0.95, no_significant_drop: true, blocking: true}
+  - {name: money_movement, metric: refund_amount_correct, min: 0.95, no_significant_drop: true, blocking: true}
+  # adversarial: the 14 pack items. Baseline 0.9714 (C-101/C-102 fail at seed 55).
+  - {name: adversarial,    metric: pass_rate,             min: 0.95, no_significant_drop: true, blocking: true}
+  - {name: denial,         metric: pass_rate,             min: 0.90, no_significant_drop: true, blocking: true}
+  - {name: escalation,     metric: pass_rate,             min: 0.95, no_significant_drop: true, blocking: true}
