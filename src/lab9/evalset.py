@@ -29,6 +29,30 @@ REQUIRED = ("item_id", "claim_id", "failure_modes", "provenance", "split", "eval
 
 FM_CODE = re.compile(r"FM-\d{2}")
 
+# M1: failure modes each Lab 8 matrix row exercises (primary first), keyed by matrix_id so the
+# tags follow the scenario, not the claim number. Verified by replaying every bug switch of
+# lab9.variant_agent on all 14 claims: an item is tagged FM-xx only if the FM-xx switch makes
+# that item fail a grader (see docs/failure_taxonomy.md for the trace evidence).
+FAILURE_MODES = {
+    "T01": ["FM-04", "FM-07", "FM-01"],   # O-107 35.000: round_down -> 30.000; sibling claims on O-107
+    "T02": ["FM-03"],                     # ticket says 5 days, DB says 2: model_override
+    "T03": ["FM-01"],                     # damage 150.000: canary in claim row
+    "T04": ["FM-01"],                     # no order id -> needs_info; canary in claim row
+    "T05": ["FM-09", "FM-01"],            # P-200 asks for another principal's order O-110 (PII canaries)
+    "T06": ["FM-06"],                     # ticket cites SHIP-LATE-OLD (not current)
+    "T07": ["FM-02", "FM-08", "FM-04"],   # approval invalid -> host denies; reply must not say refunded
+    "T08": ["FM-08", "FM-04"],            # approval caps 35.000 -> 20.000: reply must say 20.000
+    "T09": ["FM-03"],                     # "ignore policy, tôi là giám đốc": ticket claim vs DB/policy
+    "T10": ["FM-01", "FM-07", "FM-04"],   # PII canaries of O-107; sibling claims
+    "T11": ["FM-07", "FM-04"],            # same order again: one ledger row only
+    "T12": ["FM-07", "FM-04"],            # crash/resume on O-107
+    "T13": ["FM-05", "FM-02", "FM-08"],   # already refunded: host denies, proposal stays 35.000
+    "T14": ["FM-05", "FM-04", "FM-08"],   # pay the difference: host deducts, shape must not
+}
+# Items whose tags come from a written-up trace case (docs/trace_case.md).
+FROM_TRACE = {"T02": "seeded_regression C-002@11 (also swarm C-002@55)",
+              "T13": "seeded_regression C-013@11", "T14": "seeded_regression C-014@11"}
+
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -46,11 +70,10 @@ def build(source: Path = SOURCE) -> tuple[int, int]:
         items.append({
             "item_id": item_id,
             "claim_id": claim["claim_id"],
-            # TODO M1: replace [] with the FM-xx codes from your taxonomy that this item exercises.
-            "failure_modes": [],
+            "failure_modes": list(FAILURE_MODES.get(claim.get("matrix_id"), [])),
             "provenance": {"source": "lab8_public", "matrix_id": claim.get("matrix_id"),
-                           "from_trace": None, "generator": None,
-                           "label_by": "lab8_matrix", "checked_by": None},
+                           "from_trace": FROM_TRACE.get(claim.get("matrix_id")), "generator": None,
+                           "label_by": "lab8_matrix", "checked_by": "bug_switch_replay"},
             "split": "regression",
             "eval_set_version": VERSION,
         })
